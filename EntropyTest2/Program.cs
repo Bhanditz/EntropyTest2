@@ -4,7 +4,6 @@
  */
 using System;
 using System.Collections.Generic;
-using System.Text;
 using GenericTools;
 using System.Diagnostics;
 using System.Net;
@@ -126,9 +125,12 @@ namespace GenericTools
         long multiplier;
         long modulo;
         long increment;
-        long arrival;
+        
         bool debug;
         List<long> waitinglist;
+        List<long> TimeList;
+        DateTime LastTime;
+        
         public Toolkit(bool entropy = false, bool linearorexpo = false, bool Debug = false) // instance of generator is started with either in built crypto PRG or homebrewed entropy source, debug turns on console output
         {
             Entropy = entropy;
@@ -137,6 +139,9 @@ namespace GenericTools
             if (Entropy == true)
             {
                 waitinglist = new List<long>();
+                TimeList = new List<long>();
+                TimeList.Add(1);
+                LastTime = DateTime.Now;
                 Thread seedthread = new Thread(() => { seed = SeedGen(); });
                 seedthread.Start();
                 Thread multhread = new Thread(() => { multiplier = SeedGen(); });
@@ -149,8 +154,25 @@ namespace GenericTools
                 multhread.Join();
                 modthread.Join();
                 incthread.Join();
-                arrival = 1;
+                
             }
+        }
+
+        long TimeAverage()
+        {
+            DateTime temp = DateTime.Now;
+            long TimeDif = LastTime.Millisecond - temp.Millisecond;
+            TimeList.Add(TimeDif);
+            long avg = 0;
+            for(int count = 0; count < TimeList.Count; count++)
+            {
+                avg += TimeList[count] / TimeList.Count;
+            }
+            while(TimeList.Count > 100)
+            {
+                TimeList.RemoveAt(0);
+            }
+            return avg;
         }
 
         public long getSeed()
@@ -230,7 +252,7 @@ namespace GenericTools
             {
                 Thread.Sleep(1);
             }
-            seed = Convert.ToInt64(-(1 / arrival) * Convert.ToInt64(Math.Log((Convert.ToDouble(LinearDis() / modulo)) % 4294967295))); //some typecasting bullshittery is needed to  get the Log() function to play nice with long typecasting
+            seed = Convert.ToInt64(-(1 / TimeAverage()) * Convert.ToInt64(Math.Log((Convert.ToDouble(LinearDis() / modulo)) % 4294967295))); //some typecasting bullshittery is needed to  get the Log() function to play nice with long typecasting
             waitinglist.RemoveAt(0);
             return seed;
 
