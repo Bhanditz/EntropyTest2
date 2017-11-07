@@ -162,6 +162,7 @@ namespace GenericTools
         {
             DateTime temp = DateTime.Now;
             long TimeDif = LastTime.Millisecond - temp.Millisecond;
+            LastTime = temp;
             TimeList.Add(TimeDif);
             long avg = 0;
             for(int count = 0; count < TimeList.Count; count++)
