@@ -96,9 +96,9 @@ namespace EntropyTest
                 
                 stdev += ((numlist[counter] - avg) * (numlist[counter] - avg))/numlist.Count;
                 kurtupper += ((numlist[counter] - avg) * (numlist[counter] - avg) * (numlist[counter] - avg) * (numlist[counter] - avg))/numlist.Count;
-                kurtlower += (numlist[counter] - avg) * (numlist[counter] - avg);
+                kurtlower += (((numlist[counter] - avg) * (numlist[counter] - avg))/numlist.Count) * (((numlist[counter] - avg) * (numlist[counter] - avg)) / numlist.Count);
             }
-            kurtlower = (kurtlower * kurtlower) / (numlist.Count * numlist.Count);
+            
 
             stdev = Convert.ToInt64(Math.Sqrt(stdev));
             using (StreamWriter output = File.AppendText(filepath))
