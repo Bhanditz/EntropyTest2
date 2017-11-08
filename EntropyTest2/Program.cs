@@ -34,11 +34,11 @@ namespace EntropyTest
             long min = 1000000000;
             List<long> numlist = new List<long>();
             List<Thread> threadlist = new List<Thread>();
-            Toolkit toolkit = new Toolkit(true, false,true);
+           // Toolkit toolkit = new Toolkit(true, false,true);
             long avg =0;
-            for(int counter = 0; counter < 40000;counter++) // will get a total of 40,000 seed values
+            for(int counter = 0; counter < 10000;counter++) // will get a total of 40,000 seed values
             {
-                Thread threadholder = new Thread(() => { numlist.Add(toolkit.LinearDis());});
+                Thread threadholder = new Thread(() => { Toolkit threadtool = new Toolkit(true); numlist.Add(threadtool.getInc()); numlist.Add(threadtool.getMod()); numlist.Add(threadtool.getMult()); numlist.Add(threadtool.getSeed()); });
                 threadlist.Add(threadholder);
                 threadholder.Start();
                 Console.WriteLine("Launched " + counter + "-th thread");
@@ -87,18 +87,35 @@ namespace EntropyTest
                 output.WriteLine("Seed max is: " + max);
             }
             long stdev = 0;
+
+            
+            long kurtupper = 0;
+            long kurtlower = 0;
             
             for (int counter = 0; counter < numlist.Count; counter++)
             {
                 
-                stdev += ((numlist[counter] - avg) * (numlist[counter] - avg))/numlist.Count; 
+                stdev += ((numlist[counter] - avg) * (numlist[counter] - avg))/numlist.Count;
+                kurtupper += ((numlist[counter] - avg) * (numlist[counter] - avg) * (numlist[counter] - avg) * (numlist[counter] - avg))/numlist.Count;
+                kurtlower += (numlist[counter] - avg) * (numlist[counter] - avg);
             }
-            
+            kurtlower = (kurtlower * kurtlower) / (numlist.Count * numlist.Count);
+
             stdev = Convert.ToInt64(Math.Sqrt(stdev));
             using (StreamWriter output = File.AppendText(filepath))
             {
                 output.WriteLine("Seed StdDev is: " + stdev);
             }
+
+            long skew = 3* (((min + max) / 2) - avg)/stdev;
+            using (StreamWriter output = File.AppendText(filepath))
+            {
+                output.WriteLine("Seed Skewv is: " + skew);
+                output.WriteLine("Kurtosis is: " + (kurtupper / kurtlower));
+            }
+
+            
+
             Console.WriteLine("done");
             Console.ReadLine();
 
