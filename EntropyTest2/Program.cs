@@ -35,9 +35,10 @@ namespace EntropyTest
             List<Thread> threadlist = new List<Thread>();
            // Toolkit toolkit = new Toolkit(true, false,true);
             long avg =0;
-            for(int counter = 0; counter < 100000;counter++) // will get a total of 400,000 seed values
+            Toolkit threadtool = new Toolkit(3,true);
+            for (int counter = 0; counter < 50000;counter++) // will get a total of 50,000 seed values
             {
-                Thread threadholder = new Thread(() => { Toolkit threadtool = new Toolkit(1); numlist.Add(threadtool.getInc()); numlist.Add(threadtool.getMod()); numlist.Add(threadtool.getMult()); numlist.Add(threadtool.getSeed()); });
+                Thread threadholder = new Thread(() => {  numlist.Add(threadtool.ReallyRandom()); });
                 threadlist.Add(threadholder);
                 threadholder.Start();
                 Console.WriteLine("Launched " + counter + "-th thread");
@@ -160,12 +161,16 @@ namespace GenericTools
                 
                 Thread seedthread = new Thread(() => { seed = SeedGen(); });
                 seedthread.Start();
+                Thread.Sleep(1);
                 Thread multhread = new Thread(() => { multiplier = SeedGen(); });
                 multhread.Start();
+                Thread.Sleep(1);
                 Thread modthread = new Thread(() => { modulo = SeedGen(); });
                 modthread.Start();
+                Thread.Sleep(1);
                 Thread incthread = new Thread(() => { increment = SeedGen(); });
                 incthread.Start();
+                Thread.Sleep(1);
                 seedthread.Join();
                 multhread.Join();
                 modthread.Join();
@@ -204,9 +209,13 @@ namespace GenericTools
                     Thread Seed3 = new Thread(() => { Seedlist.Add(SeedGen()); });
                     Thread Seed4 = new Thread(() => { Seedlist.Add(SeedGen()); });
                     Seed1.Start();
+                    Thread.Sleep(1);
                     Seed2.Start();
+                    Thread.Sleep(1);
                     Seed3.Start();
+                    Thread.Sleep(1);
                     Seed4.Start();
+                    Thread.Sleep(1);
                     Seed1.Join();
                     Seed2.Join();
                     Seed3.Join();
@@ -374,8 +383,9 @@ namespace GenericTools
                 });
                 Pinglist.Add(Pinger);
                 Pinger.Start();
+                Thread.Sleep(1);
 
-                if (count%50 == 0)
+                if (count%25 == 0)
                 {
                     if (debug == true)
                     {
