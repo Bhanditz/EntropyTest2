@@ -37,7 +37,7 @@ namespace EntropyTest
             long avg =0;
             for(int counter = 0; counter < 100000;counter++) // will get a total of 400,000 seed values
             {
-                Thread threadholder = new Thread(() => { Toolkit threadtool = new Toolkit(true); numlist.Add(threadtool.getInc()); numlist.Add(threadtool.getMod()); numlist.Add(threadtool.getMult()); numlist.Add(threadtool.getSeed()); });
+                Thread threadholder = new Thread(() => { Toolkit threadtool = new Toolkit(1); numlist.Add(threadtool.getInc()); numlist.Add(threadtool.getMod()); numlist.Add(threadtool.getMult()); numlist.Add(threadtool.getSeed()); });
                 threadlist.Add(threadholder);
                 threadholder.Start();
                 Console.WriteLine("Launched " + counter + "-th thread");
@@ -136,8 +136,8 @@ namespace GenericTools
 {
     public class Toolkit
     {
-        bool Entropy;
-        bool Type;
+        
+        int Type;
         long seed;
         long multiplier;
         long modulo;
@@ -146,19 +146,18 @@ namespace GenericTools
         bool debug;
         List<long> waitinglist;
         List<long> TimeList;
+        List<long> Seedlist;
         DateTime LastTime;
         
-        public Toolkit(bool entropy = false, bool linearorexpo = false, bool Debug = false) // instance of generator is started with either in built crypto PRG or homebrewed entropy source, debug turns on console output
+        public Toolkit(int type =0, bool Debug = false) // instance of generator is started with either in built crypto PRG or homebrewed entropy source, debug turns on console output
         {
-            Entropy = entropy;
+            
             debug = Debug;
-            Type = linearorexpo; // if false than homebrewed algorithm uses linear distribution, else exponential distribution
-            if (Entropy == true)
+            Type = type; // 0= internal crypto library, 1 = linear distribution, 2 = exponential distribution, 3  = entropy generated list
+            if (type >0)
             {
                 waitinglist = new List<long>();
-                TimeList = new List<long>();
-                TimeList.Add(1);
-                LastTime = DateTime.Now;
+                
                 Thread seedthread = new Thread(() => { seed = SeedGen(); });
                 seedthread.Start();
                 Thread multhread = new Thread(() => { multiplier = SeedGen(); });
@@ -173,8 +172,48 @@ namespace GenericTools
                 incthread.Join();
                 
             }
+            if (type ==2)
+            {
+                TimeList = new List<long>();
+                TimeList.Add(1);
+                LastTime = DateTime.Now;
+            }
+            if(type ==3)
+            {
+                Seedlist = new List<long>();
+                Seedlist.Add(seed);
+                Seedlist.Add(increment);
+                Seedlist.Add(multiplier);
+                Seedlist.Add(modulo);
+                Thread Genthread = new Thread(() => { ListGenerator(); });
+                Genthread.Start();
+            }
+
+        
         }
 
+        void ListGenerator()
+        {
+            while(true)
+            {
+                Thread.Sleep(1);
+                if(Seedlist.Count < 30)
+                {
+                    Thread Seed1 = new Thread(() => { Seedlist.Add(SeedGen()); });
+                    Thread Seed2 = new Thread(() => { Seedlist.Add(SeedGen()); });
+                    Thread Seed3 = new Thread(() => { Seedlist.Add(SeedGen()); });
+                    Thread Seed4 = new Thread(() => { Seedlist.Add(SeedGen()); });
+                    Seed1.Start();
+                    Seed2.Start();
+                    Seed3.Start();
+                    Seed4.Start();
+                    Seed1.Join();
+                    Seed2.Join();
+                    Seed3.Join();
+                    Seed4.Join();
+                }
+            }
+        }
         long TimeAverage()
         {
             DateTime temp = DateTime.Now;
@@ -228,52 +267,64 @@ namespace GenericTools
 
         public long ReallyRandom(bool bypass=false)
         {
-            long randomnum =1;
-            if (Entropy == false | bypass ==true)
-            {
-                RNGCryptoServiceProvider gibberish = new RNGCryptoServiceProvider();
-                byte[] buffer = new byte[8];
-                gibberish.GetBytes(buffer);
-                randomnum = BitConverter.ToInt64(buffer, 0);
-            }
-            else if(Type == false)
-            {
-                randomnum = LinearDis();
-            }
-            else
-            {
-                randomnum = ExpoDis();
-            }
 
-            return Convert.ToInt64(Math.Abs(randomnum));
-        }
-
-        public long LinearDis()
-        {
-
-            long waitingnum = ReallyRandom(true);
-            waitinglist.Add(waitingnum);
-            while(waitinglist[0] != waitingnum) // access control so multiple threads can't get the same value
-            {
-                Thread.Sleep(1);
-            }
-            seed = ((seed * multiplier) + increment) % modulo;
-            waitinglist.RemoveAt(0);
-            return seed;
-        }
-
-        public long ExpoDis()
-        {
             long waitingnum = ReallyRandom(true);
             waitinglist.Add(waitingnum);
             while (waitinglist[0] != waitingnum) // access control so multiple threads can't get the same value
             {
                 Thread.Sleep(1);
             }
-            seed = Convert.ToInt64(-(1 / TimeAverage()) * Convert.ToInt64(Math.Log((Convert.ToDouble(LinearDis() / modulo)) % 4294967295))); //some typecasting bullshittery is needed to  get the Log() function to play nice with long typecasting
+            long randomnum =1;
+            if (Type == 0 | bypass ==true)
+            {
+                RNGCryptoServiceProvider gibberish = new RNGCryptoServiceProvider();
+                byte[] buffer = new byte[8];
+                gibberish.GetBytes(buffer);
+                randomnum = BitConverter.ToInt64(buffer, 0);
+            }
+            else if(Type == 1)
+            {
+                randomnum = LinearDis();
+            }
+            else if (Type == 2)
+            {
+                randomnum = ExpoDis();
+            }
+            else if (Type == 3)
+            {
+                randomnum = EntroDis();
+            }
             waitinglist.RemoveAt(0);
+            return Convert.ToInt64(Math.Abs(randomnum));
+        }
+
+        long LinearDis()
+        {
+
+            
+            seed = ((seed * multiplier) + increment) % modulo;
+            
+            return seed;
+        }
+
+        long ExpoDis()
+        {
+            
+            seed = Convert.ToInt64(-(1 / TimeAverage()) * Convert.ToInt64(Math.Log((Convert.ToDouble(LinearDis() / modulo))))); //some typecasting bullshittery is needed to  get the Log() function to play nice with long typecasting
+            
             return seed;
 
+        }
+
+        long EntroDis()
+        {
+            while(Seedlist.Count == 0)
+            {
+                Thread.Sleep(1);
+            }
+            long temp = Seedlist[0];
+            Seedlist.RemoveAt(0);
+            return temp;
         }
 
         public long SeedGen() //generates a random long number
