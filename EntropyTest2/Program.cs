@@ -35,7 +35,7 @@ namespace EntropyTest
             List<Thread> threadlist = new List<Thread>();
            // Toolkit toolkit = new Toolkit(true, false,true);
             long avg =0;
-            for(int counter = 0; counter < 10000;counter++) // will get a total of 40,000 seed values
+            for(int counter = 0; counter < 100000;counter++) // will get a total of 400,000 seed values
             {
                 Thread threadholder = new Thread(() => { Toolkit threadtool = new Toolkit(true); numlist.Add(threadtool.getInc()); numlist.Add(threadtool.getMod()); numlist.Add(threadtool.getMult()); numlist.Add(threadtool.getSeed()); });
                 threadlist.Add(threadholder);
@@ -109,7 +109,7 @@ namespace EntropyTest
             long skew = 3* (((min + max) / 2) - avg)/stdev;
             using (StreamWriter output = File.AppendText(filepath))
             {
-                output.WriteLine("Seed Skewv is: " + skew);
+                output.WriteLine("Seed Skew is: " + skew);
                 output.WriteLine("Kurtosis is: " + (kurtupper / kurtlower));
             }
 
