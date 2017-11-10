@@ -35,7 +35,7 @@ namespace EntropyTest
             List<Thread> threadlist = new List<Thread>();
            // Toolkit toolkit = new Toolkit(true, false,true);
             long avg =0;
-            Toolkit threadtool = new Toolkit(3,true);
+            Toolkit threadtool = new Toolkit(3);
             for (int counter = 0; counter < 50000;counter++) // will get a total of 50,000 seed values
             {
                 Thread threadholder = new Thread(() => {  numlist.Add(threadtool.ReallyRandom()); });
@@ -276,14 +276,17 @@ namespace GenericTools
 
         public long ReallyRandom(bool bypass=false)
         {
-
-            long waitingnum = ReallyRandom(true);
-            waitinglist.Add(waitingnum);
-            while (waitinglist[0] != waitingnum) // access control so multiple threads can't get the same value
+            if (bypass == false)
             {
-                Thread.Sleep(1);
+                long waitingnum = ReallyRandom(true);
+                waitinglist.Add(waitingnum);
+                while (waitinglist[0] != waitingnum) // access control so multiple threads can't get the same value
+                {
+                    Thread.Sleep(1);
+                }
             }
-            long randomnum =1;
+                long randomnum = 1;
+            
             if (Type == 0 | bypass ==true)
             {
                 RNGCryptoServiceProvider gibberish = new RNGCryptoServiceProvider();
@@ -303,7 +306,11 @@ namespace GenericTools
             {
                 randomnum = EntroDis();
             }
-            waitinglist.RemoveAt(0);
+
+            if (bypass == false)
+            {
+                waitinglist.RemoveAt(0);
+            }
             return Convert.ToInt64(Math.Abs(randomnum));
         }
 
