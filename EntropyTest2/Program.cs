@@ -34,9 +34,9 @@ namespace EntropyTest
             List<long> numlist = new List<long>();
             List<Thread> threadlist = new List<Thread>();
            // Toolkit toolkit = new Toolkit(true, false,true);
-            long avg =0;
+            float avg =0;
             Toolkit threadtool = new Toolkit(3);
-            for (int counter = 0; counter < 50000;counter++) // will get a total of 50,000 seed values
+            for (int counter = 0; counter < 10000;counter++) // will get a total of 10,000 seed values
             {
                 Thread threadholder = new Thread(() => {  numlist.Add(threadtool.ReallyRandom()); });
                 threadlist.Add(threadholder);
@@ -64,7 +64,7 @@ namespace EntropyTest
                     threadlist[counter].Join();
                 }
                 Console.WriteLine("Processing seed: " + counter);
-                avg += numlist[counter]/numlist.Count; 
+                avg += (float)numlist[counter]/(float)numlist.Count; 
                 if(min > numlist[counter])
                 {
                     min = numlist[counter];
@@ -82,15 +82,15 @@ namespace EntropyTest
             using (StreamWriter output = File.AppendText(filepath))
             {
                 output.WriteLine("Seed avg is: " + avg);
-                output.WriteLine("Seed median is: " + (min + max) / 2);
+                output.WriteLine("Seed median is: " + (float)(min + max) / 2);
                 output.WriteLine("Seed min is: " + min);
                 output.WriteLine("Seed max is: " + max);
             }
-            long stdev = 0;
+            float stdev = 0;
 
             
-            long kurtupper = 0;
-            long kurtlower = 0;
+            float kurtupper = 0;
+            float kurtlower = 0;
             
             for (int counter = 0; counter < numlist.Count; counter++)
             {
@@ -101,13 +101,13 @@ namespace EntropyTest
             }
             
 
-            stdev = Convert.ToInt64(Math.Sqrt(stdev));
+            stdev = (float)Math.Sqrt(stdev);
             using (StreamWriter output = File.AppendText(filepath))
             {
                 output.WriteLine("Seed StdDev is: " + stdev);
             }
 
-            long skew = 3* (((min + max) / 2) - avg)/stdev;
+            float skew = 3* ((float)((min + max) / 2) - avg)/stdev;
             using (StreamWriter output = File.AppendText(filepath))
             {
                 output.WriteLine("Seed Skew is: " + skew);
@@ -202,24 +202,20 @@ namespace GenericTools
             while(true)
             {
                 Thread.Sleep(1);
-                if(Seedlist.Count < 30)
+                if(Seedlist.Count < 300)
                 {
-                    Thread Seed1 = new Thread(() => { Seedlist.Add(SeedGen()); });
-                    Thread Seed2 = new Thread(() => { Seedlist.Add(SeedGen()); });
-                    Thread Seed3 = new Thread(() => { Seedlist.Add(SeedGen()); });
-                    Thread Seed4 = new Thread(() => { Seedlist.Add(SeedGen()); });
-                    Seed1.Start();
-                    Thread.Sleep(1);
-                    Seed2.Start();
-                    Thread.Sleep(1);
-                    Seed3.Start();
-                    Thread.Sleep(1);
-                    Seed4.Start();
-                    Thread.Sleep(1);
-                    Seed1.Join();
-                    Seed2.Join();
-                    Seed3.Join();
-                    Seed4.Join();
+                    Thread[] threadarray = new Thread[50];
+                    for (int count = 0; count < 50; count++)
+                    {
+                        threadarray[count] = new Thread(() => { Seedlist.Add(SeedGen()); });
+                        threadarray[count].Start();
+                    }
+                    for (int count = 0; count < 50; count++)
+                    {
+                        threadarray[count].Join();
+                    }
+
+
                 }
             }
         }
@@ -392,7 +388,7 @@ namespace GenericTools
                 Pinger.Start();
                 Thread.Sleep(1);
 
-                if (count%25 == 0)
+                if (count%100 == 0)
                 {
                     if (debug == true)
                     {
