@@ -102,8 +102,8 @@ namespace EntropyTest
                 output.WriteLine("Kurtosis is: " + (kurtupper / kurtlower));
             }
 
-            
 
+            threadtool.StopGenerating();
             Console.WriteLine("done");
             Console.ReadLine();
 
@@ -139,6 +139,7 @@ namespace GenericTools
         List<double> TimeList;
         List<double> Seedlist;
         DateTime LastTime;
+        bool active;
 
        public Toolkit(int type = 0, bool Debug = false) // instance of generator is started with either in built crypto PRG or homebrewed entropy source, debug turns on console output
         {
@@ -146,6 +147,7 @@ namespace GenericTools
             debug = Debug;
             Type = type; // 0= internal crypto library, 1 = linear distribution, 2 = exponential distribution, 3  = entropy generated list
             waitinglist = new List<double>();
+            active = true;
             if (type > 0)
             {
 
@@ -213,9 +215,14 @@ namespace GenericTools
 
         }
 
+        public void StopGenerating()
+        {
+            active = false;
+        }
+
         void ListGenerator()
         {
-            while (true)
+            while (active == true)
             {
                 Thread.Sleep(1);
                 if (Seedlist.Count < 300)
@@ -251,25 +258,7 @@ namespace GenericTools
             return avg;
         }
 
-        public double getSeed()
-        {
-            return seed;
-        }
-        public double getMult()
-        {
-            return multiplier;
-        }
-
-        public double getInc()
-        {
-            return increment;
-        }
-
-        public double getMod()
-        {
-            return modulo;
-        }
-
+      
         public bool Eventgenerator(double freq) // using built in cryptographic random # generator to produce true returns 'freq' percentage of the time
         {
             double randomnum = ReallyRandom();
@@ -353,7 +342,7 @@ namespace GenericTools
             return temp;
         }
 
-        public double SeedGen() //generates a random double number
+        double SeedGen() //generates a random double number
         {
             double initialnum = 1;
             Ping Sender = new Ping();
@@ -363,7 +352,7 @@ namespace GenericTools
                 Console.WriteLine("Generating Seed value");
             }
             int count = 0;
-            while (initialnum < 4093082899) // multiply until passing a sufficiently large number
+            while (initialnum < 4093082899 & active == true) // multiply until passing a sufficiently large number
             {
 
                 Thread Pinger = new Thread(() =>
