@@ -35,7 +35,7 @@ namespace EntropyTest
             List<Thread> threadlist = new List<Thread>();
            // Toolkit toolkit = new Toolkit(true, false,true);
             double avg =0;
-            Toolkit threadtool = new Toolkit(1);
+            Toolkit threadtool = new Toolkit(3);
             for (int counter = 0; counter < 100000;counter++) // will get a total of 10,000 seed values
             {
                 numlist.Add(threadtool.ReallyRandom());
