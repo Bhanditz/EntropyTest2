@@ -5,13 +5,13 @@
 using System;
 using System.Collections.Generic;
 using GenericTools;
-using System.Diagnostics;
+
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Security.Cryptography;
 using System.IO;
 using System.Threading;
-using System.Threading.Tasks;
+
 
 namespace EntropyTest
 {
@@ -29,42 +29,30 @@ namespace EntropyTest
                 output.WriteLine("test results");
             }
            
-            long max = 0;
-            long min = 1000000000;
-            List<long> numlist = new List<long>();
+            double max = 0;
+            double min = 1000000000;
+            List<double> numlist = new List<double>();
             List<Thread> threadlist = new List<Thread>();
            // Toolkit toolkit = new Toolkit(true, false,true);
-            float avg =0;
-            Toolkit threadtool = new Toolkit(3);
-            for (int counter = 0; counter < 10000;counter++) // will get a total of 10,000 seed values
+            double avg =0;
+            Toolkit threadtool = new Toolkit(1);
+            for (int counter = 0; counter < 100000;counter++) // will get a total of 10,000 seed values
             {
-                Thread threadholder = new Thread(() => {  numlist.Add(threadtool.ReallyRandom()); });
-                threadlist.Add(threadholder);
-                threadholder.Start();
-                Console.WriteLine("Launched " + counter + "-th thread");
-                Console.WriteLine(Process.GetCurrentProcess().Threads.Count + " currently running");
+                numlist.Add(threadtool.ReallyRandom());
+                Console.WriteLine("Gathered " + counter + "-th number");
+               
 
-                if(Process.GetCurrentProcess().Threads.Count > 750)
-                {
-                    Console.WriteLine("Waiting on threads to finish up");
-                }
-                while (Process.GetCurrentProcess().Threads.Count > 750)
-                {
-                    Task.Delay(1);
-                    Thread.Sleep(1);
-                }
+                
+                
             }
             
             for (int counter = 0; counter < numlist.Count; counter++)
             {
 
-                Console.WriteLine("Waiting on seed: " + counter);
-                if (counter < threadlist.Count)
-                {
-                    threadlist[counter].Join();
-                }
-                Console.WriteLine("Processing seed: " + counter);
-                avg += (float)numlist[counter]/(float)numlist.Count; 
+                
+                
+                Console.WriteLine("Processing " + counter);
+                avg += numlist[counter]/numlist.Count; 
                 if(min > numlist[counter])
                 {
                     min = numlist[counter];
@@ -86,11 +74,11 @@ namespace EntropyTest
                 output.WriteLine("Seed min is: " + min);
                 output.WriteLine("Seed max is: " + max);
             }
-            float stdev = 0;
+            double stdev = 0;
 
             
-            float kurtupper = 0;
-            float kurtlower = 0;
+            double kurtupper = 0;
+            double kurtlower = 0;
             
             for (int counter = 0; counter < numlist.Count; counter++)
             {
@@ -107,7 +95,7 @@ namespace EntropyTest
                 output.WriteLine("Seed StdDev is: " + stdev);
             }
 
-            float skew = 3* ((float)((min + max) / 2) - avg)/stdev;
+            double skew = 3* (((min + max) / 2) - avg)/stdev;
             using (StreamWriter output = File.AppendText(filepath))
             {
                 output.WriteLine("Seed Skew is: " + skew);
