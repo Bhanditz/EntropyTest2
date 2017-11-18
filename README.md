@@ -2,6 +2,7 @@ This is an initial attempt at creating a truly random number generator DLL that 
 Currently it is using ping replies for seed generation, I'll add in others as they occur to me.
 Internal namespace is GenericTools, class is Toolkit, subject to change as this develops.
 
+Source code is in the EntropyTest2 folder in case you would prefer to directly include it in code instead of calling the DLL.
 There are currently 4 ways to initialize an instance of the class
 In order from fastest to slowest to initialize
 
