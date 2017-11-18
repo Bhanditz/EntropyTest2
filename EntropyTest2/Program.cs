@@ -1,126 +1,17 @@
 ﻿/*
- * https://stackoverflow.com/questions/22158278/wait-some-seconds-without-blocking-ui-execution found a good wait that doesnt sleeplock thread
- * 
+ * John Fromholtz
+ * First attempt at a truly random number generator DLL that doesn't require privileged access on a machine 
+ * refer to TestCradle fork for testing methods, Initial tests of 10,000 numbers demonstrated uniform distribution
  */
 using System;
 using System.Collections.Generic;
-using GenericTools;
+
 
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Security.Cryptography;
-using System.IO;
+
 using System.Threading;
-
-
-namespace EntropyTest
-{
-    class core
-    {
-       
-        public static void Main()
-        {
-            string filepath = @".\results.txt";
-            filepath = Path.GetFullPath(filepath);
-           
-            
-            using (StreamWriter output = File.CreateText(filepath))
-            {
-                output.WriteLine("test results");
-            }
-           
-            double max = 0;
-            double min = 1000000000;
-            List<double> numlist = new List<double>();
-            List<Thread> threadlist = new List<Thread>();
-           // Toolkit toolkit = new Toolkit(true, false,true);
-            double avg =0;
-            Toolkit threadtool = new Toolkit(1);
-            for (int counter = 0; counter < 100000;counter++) // will get a total of 10,000 seed values
-            {
-                numlist.Add(threadtool.ReallyRandom());
-                Console.WriteLine("Gathered " + counter + "-th number");
-               
-
-                
-                
-            }
-            
-            for (int counter = 0; counter < numlist.Count; counter++)
-            {
-
-                
-                
-                Console.WriteLine("Processing " + counter);
-                avg += numlist[counter]/numlist.Count; 
-                if(min > numlist[counter])
-                {
-                    min = numlist[counter];
-                }
-                if (max < numlist[counter])
-                {
-                    max = numlist[counter];
-                }
-                using (StreamWriter output = File.AppendText(filepath))
-                {
-                    output.WriteLine("Seed value is: " + numlist[counter]);
-                }
-            }
-            
-            using (StreamWriter output = File.AppendText(filepath))
-            {
-                output.WriteLine("Seed avg is: " + avg);
-                output.WriteLine("Seed median is: " + (float)(min + max) / 2);
-                output.WriteLine("Seed min is: " + min);
-                output.WriteLine("Seed max is: " + max);
-            }
-            double stdev = 0;
-
-            
-            double kurtupper = 0;
-            double kurtlower = 0;
-            
-            for (int counter = 0; counter < numlist.Count; counter++)
-            {
-                
-                stdev += ((numlist[counter] - avg) * (numlist[counter] - avg))/numlist.Count;
-                kurtupper += ((numlist[counter] - avg) * (numlist[counter] - avg) * (numlist[counter] - avg) * (numlist[counter] - avg))/numlist.Count;
-                kurtlower += (((numlist[counter] - avg) * (numlist[counter] - avg))/numlist.Count) * (((numlist[counter] - avg) * (numlist[counter] - avg)) / numlist.Count);
-            }
-            
-
-            stdev = (float)Math.Sqrt(stdev);
-            using (StreamWriter output = File.AppendText(filepath))
-            {
-                output.WriteLine("Seed StdDev is: " + stdev);
-            }
-
-            double skew = 3* (((min + max) / 2) - avg)/stdev;
-            using (StreamWriter output = File.AppendText(filepath))
-            {
-                output.WriteLine("Seed Skew is: " + skew);
-                output.WriteLine("Kurtosis is: " + (kurtupper / kurtlower));
-            }
-
-
-            threadtool.StopGenerating();
-            Console.WriteLine("done");
-            Console.ReadLine();
-
-
-
-
-        }
-
-        
-
-
-    }
-     
-}
-
-
-
 
 
 namespace GenericTools
