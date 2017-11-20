@@ -36,7 +36,7 @@ namespace EntropyTest
            // Toolkit toolkit = new Toolkit(true, false,true);
             double avg =0;
             Toolkit threadtool = new Toolkit(3);
-            for (int counter = 0; counter < 100000;counter++) // will get a total of 10,000 seed values
+            for (int counter = 0; counter < 5000;counter++) // will get a total of 5,000 seed values
             {
                 numlist.Add(threadtool.ReallyRandom());
                 Console.WriteLine("Gathered " + counter + "-th number");
