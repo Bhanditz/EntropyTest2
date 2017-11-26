@@ -29,16 +29,16 @@ namespace EntropyTest
                 output.WriteLine("test results");
             }
            
-            double max = 0;
-            double min = 1000000000;
-            List<double> numlist = new List<double>();
+            decimal max = 0;
+            decimal min = 1000000000;
+            List<decimal> numlist = new List<decimal>();
             List<Thread> threadlist = new List<Thread>();
            // Toolkit toolkit = new Toolkit(true, false,true);
-            double avg =0;
+            decimal avg =0;
             Toolkit threadtool = new Toolkit(3);
             for (int counter = 0; counter < 5000;counter++) // will get a total of 5,000 seed values
             {
-                numlist.Add(threadtool.ReallyRandom());
+                numlist.Add(Convert.ToDecimal(threadtool.ReallyRandom()));
                 Console.WriteLine("Gathered " + counter + "-th number");
                
 
@@ -46,7 +46,7 @@ namespace EntropyTest
                 
             }
             
-            for (int counter = 0; counter < numlist.Count; counter++)
+            for (int counter = 0; counter < numlist.Count-1; counter++)
             {
 
                 
@@ -74,28 +74,28 @@ namespace EntropyTest
                 output.WriteLine("Seed min is: " + min);
                 output.WriteLine("Seed max is: " + max);
             }
-            double stdev = 0;
+            decimal stdev = 0;
 
+
+            decimal kurtupper = 0;
+            decimal kurtlower = 0;
             
-            double kurtupper = 0;
-            double kurtlower = 0;
-            
-            for (int counter = 0; counter < numlist.Count; counter++)
+            for (int counter = 0; counter < numlist.Count-1; counter++)
             {
                 
                 stdev += ((numlist[counter] - avg) * (numlist[counter] - avg))/numlist.Count;
                 kurtupper += ((numlist[counter] - avg) * (numlist[counter] - avg) * (numlist[counter] - avg) * (numlist[counter] - avg))/numlist.Count;
                 kurtlower += (((numlist[counter] - avg) * (numlist[counter] - avg))/numlist.Count) * (((numlist[counter] - avg) * (numlist[counter] - avg)) / numlist.Count);
             }
-            
 
-            stdev = (float)Math.Sqrt(stdev);
+
+            stdev = Convert.ToDecimal(Math.Sqrt(Convert.ToDouble(stdev)));
             using (StreamWriter output = File.AppendText(filepath))
             {
                 output.WriteLine("Seed StdDev is: " + stdev);
             }
 
-            double skew = 3* (((min + max) / 2) - avg)/stdev;
+            decimal skew = 3* (((min + max) / 2) - avg)/stdev;
             using (StreamWriter output = File.AppendText(filepath))
             {
                 output.WriteLine("Seed Skew is: " + skew);
