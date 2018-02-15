@@ -125,6 +125,9 @@ namespace EntropyTest
 
 namespace GenericTools
 {
+    /// <summary>
+    /// Number generator with PRNG (linear and exponential distributions) or TRNG capabilities
+    /// </summary>
     public class Toolkit
     {
 
@@ -141,7 +144,12 @@ namespace GenericTools
         DateTime LastTime;
         bool active;
 
-       public Toolkit(int type = 0, bool Debug = false) // instance of generator is started with either in built crypto PRG or homebrewed entropy source, debug turns on console output
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Toolkit"/> class.
+        /// </summary>
+        /// <param name="type">0 or empty= internal number generator library, 1= linear distribution seeded with TRNG, 2= exponential distribution, 3= Full TRNG, list maintained in background, be sure to invoke stopGenerating before program conclusion</param>
+        /// <param name="Debug">if set to <c>true</c> [debug].</param>
+        public Toolkit(int type = 0, bool Debug = false) // instance of generator is started with either in built crypto PRG or homebrewed entropy source, debug turns on console output
         {
 
             debug = Debug;
@@ -215,6 +223,9 @@ namespace GenericTools
 
         }
 
+        /// <summary>
+        /// Stops the generating.
+        /// </summary>
         public void StopGenerating()
         {
             active = false;
@@ -258,7 +269,12 @@ namespace GenericTools
             return avg;
         }
 
-      
+
+        /// <summary>
+        /// Returns TRUE 'freq' percent of the time.
+        /// </summary>
+        /// <param name="freq">0-100 scale of chance that return value is TRUE</param>
+        /// <returns></returns>
         public bool Eventgenerator(double freq) // using built in cryptographic random # generator to produce true returns 'freq' percentage of the time
         {
             double randomnum = ReallyRandom();
@@ -273,6 +289,11 @@ namespace GenericTools
             }
         }
 
+        /// <summary>
+        /// Returns Random number from initialized distribution type
+        /// </summary>
+        /// <param name="bypass">set to TRUE to force use of default PRNG library</param>
+        /// <returns>Double</returns>
         public double ReallyRandom(bool bypass = false)
         {
             if (bypass == false)
