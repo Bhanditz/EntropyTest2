@@ -132,15 +132,15 @@ namespace GenericTools
     {
 
         int Type;
-        double seed;
-        double multiplier;
-        double modulo;
-        double increment;
+        long seed;
+        long multiplier;
+        long modulo;
+        long increment;
 
         bool debug;
-        List<double> waitinglist;
-        List<double> TimeList;
-        List<double> Seedlist;
+        List<long> waitinglist;
+        List<long> TimeList;
+        List<long> Seedlist;
         DateTime LastTime;
         bool active;
 
@@ -154,7 +154,7 @@ namespace GenericTools
 
             debug = Debug;
             Type = type; // 0= internal crypto library, 1 = linear distribution, 2 = exponential distribution, 3  = entropy generated list
-            waitinglist = new List<double>();
+            waitinglist = new List<long>();
             active = true;
             if (type > 0)
             {
@@ -196,7 +196,7 @@ namespace GenericTools
                     Thread incthread = new Thread(() => { increment = SeedGen(); });
                     incthread.Start();
                     Thread.Sleep(1);
-                    TimeList = new List<double>();
+                    TimeList = new List<long>();
                     TimeList.Add(1);
                     LastTime = DateTime.Now;
                     seedthread.Join();
@@ -206,7 +206,7 @@ namespace GenericTools
                 }
                 if (type == 3)
                 {
-                    Seedlist = new List<double>();
+                    Seedlist = new List<long>();
                     Thread[] threadarray = new Thread[75];
                     for (int count = 0; count < 75; count++)
                     {
@@ -254,7 +254,7 @@ namespace GenericTools
         double TimeAverage()
         {
             DateTime temp = DateTime.Now;
-            double TimeDif = LastTime.Millisecond - temp.Millisecond;
+            long TimeDif = LastTime.Millisecond - temp.Millisecond;
             LastTime = temp;
             TimeList.Add(TimeDif);
             double avg = 0;
@@ -275,9 +275,9 @@ namespace GenericTools
         /// </summary>
         /// <param name="freq">0-100 scale of chance that return value is TRUE</param>
         /// <returns></returns>
-        public bool Eventgenerator(double freq) // using built in cryptographic random # generator to produce true returns 'freq' percentage of the time
+        public bool Eventgenerator(long freq) // using built in cryptographic random # generator to produce true returns 'freq' percentage of the time
         {
-            double randomnum = ReallyRandom();
+            long randomnum = ReallyRandom();
 
             if ((randomnum % 100) <= freq)
             {
@@ -294,18 +294,18 @@ namespace GenericTools
         /// </summary>
         /// <param name="bypass">set to TRUE to force use of default PRNG library</param>
         /// <returns>Double</returns>
-        public double ReallyRandom(bool bypass = false)
+        public long ReallyRandom(bool bypass = false)
         {
             if (bypass == false)
             {
-                double waitingnum = this.ReallyRandom(true);
+                long waitingnum = this.ReallyRandom(true);
                 this.waitinglist.Add(waitingnum);
                 while (waitinglist[0] != waitingnum) // access control so multiple threads can't get the same value
                 {
                     Thread.Sleep(1);
                 }
             }
-            double randomnum = 1;
+            long randomnum = 1;
 
             if (Type == 0 | bypass == true)
             {
@@ -334,7 +334,7 @@ namespace GenericTools
             return Math.Abs(randomnum);
         }
 
-        double LinearDis()
+        long LinearDis()
         {
 
 
@@ -343,27 +343,27 @@ namespace GenericTools
             return seed;
         }
 
-        double ExpoDis()
+        long ExpoDis()
         {
 
-            seed = (Math.Abs(-(1 / TimeAverage())  * Math.Log(LinearDis() / modulo))); //some typecasting bullshittery is needed to  get the Log() function to play nice with double typecasting
+            long temp = Convert.ToInt64((Math.Abs(-(1 / TimeAverage())  * Math.Log((LinearDis() + 1)/ modulo)))%long.MaxValue); //some typecasting bullshittery is needed to  get the Log() function to play nice with double typecasting
 
-            return seed;
+            return temp;
 
         }
 
-        double EntroDis()
+        long EntroDis()
         {
             while (Seedlist.Count == 0)
             {
                 Thread.Sleep(1);
             }
-            double temp = Seedlist[0];
+            long temp = Seedlist[0];
             Seedlist.RemoveAt(0);
             return temp;
         }
 
-        double SeedGen() //generates a random double number
+        long SeedGen() //generates a random double number
         {
             double initialnum = 1;
             Ping Sender = new Ping();
@@ -431,32 +431,32 @@ namespace GenericTools
             {
                 Pinglist[counter].Join();
             }
-            initialnum = initialnum % 4093082899; //large prime number close to the limit of an double
+            initialnum = initialnum % 2147483629; //large prime number close to the limit of an long
             if (debug == true)
             {
                 Console.WriteLine("seed is " + initialnum);
             }
-            return initialnum;
+            return Convert.ToInt64(initialnum);
 
         }
 
         IPAddress ValidIP() // returns a valid non-reserved IP address
         {
-            double oct1 = (ReallyRandom(true) % 255);
-            double oct2 = (ReallyRandom(true) % 255);
-            double oct3 = (ReallyRandom(true) % 255);
-            double oct4 = (ReallyRandom(true) % 255);
+            int oct1 = Convert.ToInt32(ReallyRandom(true) % 254);
+            int oct2 = Convert.ToInt32(ReallyRandom(true) % 254);
+            int oct3 = Convert.ToInt32(ReallyRandom(true) % 254);
+            int oct4 = Convert.ToInt32(ReallyRandom(true) % 254);
             string IPstring;
             IPAddress newaddr;
 
             while (oct1 == 10 | oct1 == 127)
             {
-                oct1 = (ReallyRandom(true) % 255);
+                oct1 = Convert.ToInt32(ReallyRandom(true) % 254);
             }
             while ((oct1 == 172 & (oct2 < 32 & oct2 > 15)) | (oct1 == 192 & oct2 == 168))
             {
-                oct1 = (ReallyRandom(true) % 255);
-                oct2 = (ReallyRandom(true) % 255);
+                oct1 = Convert.ToInt32(ReallyRandom(true) % 254);
+                oct2 = Convert.ToInt32(ReallyRandom(true) % 254);
             }
             IPstring = oct1 + "." + oct2 + "." + oct3 + "." + oct4;
             IPAddress.TryParse(IPstring, out newaddr);
