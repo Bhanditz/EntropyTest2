@@ -11,7 +11,7 @@ using System.Net.NetworkInformation;
 using System.Security.Cryptography;
 using System.IO;
 using System.Threading;
-
+using System.Diagnostics;
 
 namespace EntropyTest
 {
@@ -20,7 +20,9 @@ namespace EntropyTest
        
         public static void Main()
         {
-            string filepath = @".\results.txt";
+            Console.WriteLine("select sample size: ");
+            int scale = Convert.ToInt32(Console.ReadLine());
+            string filepath = @".\results"+Convert.ToString(scale)+@".txt";
             filepath = Path.GetFullPath(filepath);
            
             
@@ -31,21 +33,28 @@ namespace EntropyTest
            
             decimal max = 0;
             decimal min = 1000000000;
+            
             List<decimal> numlist = new List<decimal>();
-            List<Thread> threadlist = new List<Thread>();
+            Console.WriteLine("initiating "+scale+" samples");
+           List <Thread> threadlist = new List<Thread>();
            // Toolkit toolkit = new Toolkit(true, false,true);
             decimal avg =0;
             Toolkit threadtool = new Toolkit(3);
-            for (int counter = 0; counter < 5000;counter++) // will get a total of 5,000 seed values
+            Stopwatch bigtimer = new Stopwatch(); //timer for runtime statistics
+            bigtimer.Start();
+            for (int counter = 0; counter < scale;counter++) // will get a total of 5,000 seed values
             {
                 numlist.Add(Convert.ToDecimal(threadtool.ReallyRandom()));
-                Console.WriteLine("Gathered " + counter + "-th number");
+                Console.WriteLine("Gathered " + counter + "-th number "+ numlist[counter]);
                
 
                 
                 
             }
+            bigtimer.Stop();
             
+            TimeSpan time = bigtimer.Elapsed;
+            double timeavg = time.TotalMilliseconds/scale;
             for (int counter = 0; counter < numlist.Count-1; counter++)
             {
 
@@ -69,8 +78,9 @@ namespace EntropyTest
             
             using (StreamWriter output = File.AppendText(filepath))
             {
+                output.WriteLine("Avg time to generate value is: " + timeavg);
                 output.WriteLine("Seed avg is: " + avg);
-                output.WriteLine("Seed median is: " + (float)(min + max) / 2);
+                output.WriteLine("Seed median is: " + (((decimal)min + (decimal)max) / (decimal)2));
                 output.WriteLine("Seed min is: " + min);
                 output.WriteLine("Seed max is: " + max);
             }
@@ -84,8 +94,8 @@ namespace EntropyTest
             {
                 
                 stdev += ((numlist[counter] - avg) * (numlist[counter] - avg))/numlist.Count;
-                kurtupper += ((numlist[counter] - avg) * (numlist[counter] - avg) * (numlist[counter] - avg) * (numlist[counter] - avg))/numlist.Count;
-                kurtlower += (((numlist[counter] - avg) * (numlist[counter] - avg))/numlist.Count) * (((numlist[counter] - avg) * (numlist[counter] - avg)) / numlist.Count);
+                kurtupper += (((numlist[counter] - avg) / numlist.Count) * ((numlist[counter] - avg) / numlist.Count) * ((numlist[counter] - avg) / numlist.Count) * ((numlist[counter] - avg) / numlist.Count));
+                kurtlower += ((((numlist[counter] - avg) / numlist.Count) * ((numlist[counter] - avg) / numlist.Count))) * ((((numlist[counter] - avg) / numlist.Count) * ((numlist[counter] - avg) / numlist.Count)) );
             }
 
 
@@ -104,7 +114,7 @@ namespace EntropyTest
 
 
             threadtool.StopGenerating();
-            Console.WriteLine("done");
+            Console.WriteLine("done, press enter to return");
             Console.ReadLine();
 
 
