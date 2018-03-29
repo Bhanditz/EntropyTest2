@@ -154,18 +154,24 @@ namespace GenericTools
         DateTime LastTime;
         bool active;
 
+        int threadcount;
+        int maxthreads;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="Toolkit"/> class.
         /// </summary>
         /// <param name="type">0 or empty= internal number generator library, 1= linear distribution seeded with TRNG, 2= exponential distribution, 3= Full TRNG, list maintained in background, be sure to invoke stopGenerating before program conclusion</param>
+        /// <param name="maxthread">Maximum number of seed generation threads to run concurrently</param>
         /// <param name="Debug">if set to <c>true</c> [debug].</param>
-        public Toolkit(int type = 0, bool Debug = false) // instance of generator is started with either in built crypto PRG or homebrewed entropy source, debug turns on console output
+        public Toolkit(int type = 0, int Maxthread = 0, bool Debug = false) // instance of generator is started with either in built crypto PRG or homebrewed entropy source, debug turns on console output
         {
 
             debug = Debug;
             Type = type; // 0= internal crypto library, 1 = linear distribution, 2 = exponential distribution, 3  = entropy generated list
             waitinglist = new List<long>();
             active = true;
+            threadcount = 0;
+            maxthreads = 4;
             if (type > 0)
             {
 
@@ -217,12 +223,7 @@ namespace GenericTools
                 if (type == 3)
                 {
                     Seedlist = new List<long>();
-                    Thread[] threadarray = new Thread[75];
-                    for (int count = 0; count < 75; count++)
-                    {
-                        threadarray[count] = new Thread(() => { Seedlist.Add(SeedGen()); });
-                        threadarray[count].Start();
-                    }
+                    maxthreads = Maxthread;
                     
                     Thread Genthread = new Thread(() => { ListGenerator(); });
                     Genthread.Start();
@@ -246,18 +247,11 @@ namespace GenericTools
             while (active == true)
             {
                 Thread.Sleep(1);
-                if (Seedlist.Count < 300)
+                while (Seedlist.Count < 300 && this.threadcount < this.maxthreads)
                 {
-                    Thread[] threadarray = new Thread[75];
-                    for (int count = 0; count < 75; count++)
-                    {
-                        threadarray[count] = new Thread(() => { Seedlist.Add(SeedGen()); });
-                        threadarray[count].Start();
-                    }
-                    for (int count = 0; count < 75; count++)
-                    {
-                        threadarray[count].Join();
-                    }
+                    Thread thread = new Thread(() => { Seedlist.Add(SeedGen()); });
+                    thread.Start();                  
+                    
                 }
             }
         }
@@ -375,6 +369,7 @@ namespace GenericTools
 
         long SeedGen() //generates a random double number
         {
+            Interlocked.Increment(ref threadcount);
             double initialnum = 1;
             Ping Sender = new Ping();
             List<Thread> Pinglist = new List<Thread>();
@@ -446,6 +441,7 @@ namespace GenericTools
             {
                 Console.WriteLine("seed is " + initialnum);
             }
+            Interlocked.Decrement(ref threadcount);
             return Convert.ToInt64(initialnum);
 
         }
